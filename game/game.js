@@ -25,8 +25,8 @@ $(document).ready(function(){
 				x_sum += Math.cos(this.input_dirs[i]);
 				y_sum += Math.sin(this.input_dirs[i]);
 			}
-			this.x += 2*x_sum/this.input_dirs.length;
-			this.y += 2*y_sum/this.input_dirs.length;
+			this.x += 4*x_sum/this.input_dirs.length;
+			this.y += 4*y_sum/this.input_dirs.length;
 			if(this.x+this.radius >= w) this.x = w-this.radius-1;
 			else if (this.x-this.radius <= 0) this.x = this.radius+1;
 			if(this.y+this.radius >= h) this.y = h-this.radius-1;
@@ -104,8 +104,7 @@ $(document).ready(function(){
 			flags[i].fadeSteps--;
 			if(flags[i].fadeSteps < 0){
 				// check flag expiration
-				flags.splice(i,1);
-				i--;
+				flags.splice(i--,1) = null;
 				continue;
 			}
 			var col_red = collision(flags[i], red);
@@ -119,15 +118,15 @@ $(document).ready(function(){
 				else{
 					blue.score += flags[i].value;
 				}
-				flags.splice(i,1);
+				flags.splice(i--,1) = null;
 			}
 			else if(col_red){
 				red.score += flags[i].value;
-				flags.splice(i,1);
+				flags.splice(i--,1) = null;
 			}
 			else if(col_blue){
 				blue.score += flags[i].value;
-				flags.splice(i,1);
+				flags.splice(i--,1) = null;
 			}
 		}
 
