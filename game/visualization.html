@@ -1,31 +1,49 @@
 <html>
-  <head>
-  	<script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.3.3/d3.min.js"></script>
-  </head>
-  <body>
-  	<canvas id="team1" class="thumbstick" width="300" height="150" style="border:1px solid #d3d3d3;">Your browser does not support the HTML5 canvas tag.</canvas>
+	<head>
+	</head>
+	<body>
+		<canvas id="team1" class="thumbstick" width="300" height="150" style="border:1px solid #d3d3d3;">Your browser does not support the HTML5 canvas tag.</canvas>
+		
+	</body>
+	<script>
+	setInterval(function() {
+		var c = document.getElementById("team1");
+		var ctx = c.getContext("2d");
+		ctx.fillStyle = 'white';
+		ctx.fillRect(0, 0, 300, 150);
+		ctx.fillStyle = 'black';
+		var angles = [ ];
+		for (var i = 0; i < 500; i++) {
+			angles.push(Math.random() * Math.PI * 2);
+		}
+		for (var i = 0; i < 200; i++) {
+			angles.push(Math.random() * Math.PI /2 + Math.PI /1.2);
+		}
+		var sizeC = 40;
+		var fiveD = 2.5 * Math.PI / 180;
 
-  </body>
-  <script>
-  var c = document.getElementById("team1");
-  var ctx = c.getContext("2d");
-  var angles = { Math.PI, 0, 0, Math.PI * 2 };
 
-  ctx.beginPath();
-  ctx.arc(100, 75, 50, 0, 2*Math.PI);
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  
-  var dist = { };
-  angles.forEach(function(data) {
-  	var norm = data / Math.PI * 180 / 5;
-  	dist[norm] = (dist[norm] + 1) / angles.length;
-  });
+		ctx.beginPath();
+		ctx.arc(100, 75, 50, 0, 2*Math.PI);
+		ctx.lineWidth = 1;
+		ctx.stroke();
 
-  ctx.beginPath();
-  ctx.arc(100, 75, 60, 2*Math.PI - Math.PI/50, 2*Math.PI);
-  ctx.lineWidth = 1;
-  ctx.stroke();
+		var dist = { };
+		angles.forEach(function(data) {
+			var norm = Math.floor(data / Math.PI * 180 / 10);
+			dist[norm] = (isNaN(dist[norm]) ? 0 : dist[norm]) + 1;
+		});
 
-  </script>
+		for (var i = 0; i < sizeC; i++) {
+			for (var o in dist) {
+				if (dist.hasOwnProperty(o) && dist[o] > i) {
+					ctx.beginPath();
+					ctx.arc(100, 75, 50 + i, o * Math.PI / 180 * 10 - fiveD, (parseInt(o) + 1) * Math.PI / 180 * 10 - fiveD);
+					ctx.lineWidth = 1;
+					ctx.stroke();
+				}
+			}
+		}
+	}, 50);
+	</script>
 </html>
