@@ -1,9 +1,18 @@
+$(window).resize(function(){	
+	$("#canvas").width('100%');
+	$("#canvas").height('90%');
+	$("#canvas").attr('width',$("#canvas").width());
+	$("#canvas").attr('height',$("#canvas").height());
+	w = $("#canvas").width();
+	h = $("#canvas").height();
+});
+var w = 0, h = 0;
 $(document).ready(function(){
 	//Canvas stuff
 	var canvas = $("#canvas")[0];
 	var ctx = canvas.getContext("2d");
-	var w = $("#canvas").width();
-	var h = $("#canvas").height();
+
+	$(window).resize();
 
 	var round_length = 2; // in minutes
 	var flag_expiration = 5; // in seconds
@@ -12,7 +21,7 @@ $(document).ready(function(){
 	function Team(x, y){
 		this.score = 0;
 		this.input_dirs = []; // directions in radians from +x axis, updated from FireBase
-		this.radius = 5;
+		this.radius = 15;
 		this.x = x;
 		this.y = y;
 		this.updatePos = function(){
@@ -25,8 +34,8 @@ $(document).ready(function(){
 				x_sum += Math.cos(this.input_dirs[i]);
 				y_sum += Math.sin(this.input_dirs[i]);
 			}
-			this.x += 4*x_sum/this.input_dirs.length;
-			this.y += 4*y_sum/this.input_dirs.length;
+			this.x += 2*this.radius/3*x_sum/this.input_dirs.length;
+			this.y += 2*this.radius/3*y_sum/this.input_dirs.length;
 			if(this.x+this.radius >= w) this.x = w-this.radius-1;
 			else if (this.x-this.radius <= 0) this.x = this.radius+1;
 			if(this.y+this.radius >= h) this.y = h-this.radius-1;
@@ -39,11 +48,15 @@ $(document).ready(function(){
 
 	function Flag(x, y, value){
 		Flag.prototype.flag_vals = [10, 20, 50];
-		this.radius = 7;
 		this.x = x;
 		this.y = y;
 		this.value = value;
-		this.fadeSteps = flag_expiration*1000/tick_freq;
+		switch(value){
+			case 10: this.radius = 8; break;
+			case 20: this.radius = 11; break;
+			case 50: this.radius = 14; break;
+		}
+		this.fadeSteps = (flag_expiration+(0|(Math.random())*3)-1)*1000/tick_freq;
 	}
 
 	function collision(A, B){
@@ -104,7 +117,7 @@ $(document).ready(function(){
 			flags[i].fadeSteps--;
 			if(flags[i].fadeSteps < 0){
 				// check flag expiration
-				flags.splice(i--,1) = null;
+				flags.splice(i--,1)[0] = null;
 				continue;
 			}
 			var col_red = collision(flags[i], red);
@@ -118,23 +131,34 @@ $(document).ready(function(){
 				else{
 					blue.score += flags[i].value;
 				}
-				flags.splice(i--,1) = null;
+				flags.splice(i--,1)[0] = null;
 			}
 			else if(col_red){
 				red.score += flags[i].value;
-				flags.splice(i--,1) = null;
+				flags.splice(i--,1)[0] = null;
 			}
 			else if(col_blue){
 				blue.score += flags[i].value;
-				flags.splice(i--,1) = null;
+				flags.splice(i--,1)[0] = null;
 			}
 		}
 
 		// spawn new flags
-		while(flags.length < 2 || flags.length < 0|(game_steps*tick_freq / (round_length*1000*60/4))){
+		var difficulty = (0|(game_steps*tick_freq / (round_length*1000*60/4)));
+		while(flags.length < 2 || flags.length < 2+difficulty){
 			var gen = new Flag( 0|(Math.random()*(w-20))+10, 0|(Math.random()*(h-20))+10, Flag.prototype.flag_vals[0|Math.random()*3] );
-			if( !(collision(gen,red) || collision(gen,blue)) )
+			if( !(collision(gen,red) || collision(gen,blue)) ){
+				var b = false;
+				for(var i=0;i<flags.length;i++){
+					if(collision(flags[i],gen)){
+						b = true;
+						break;
+					}
+				}
+				if(b) continue;
 				flags.push(gen);
+			}
+
 		}
 
 		// draw everything
@@ -160,12 +184,23 @@ $(document).ready(function(){
 			// draw flags
 			ctx.beginPath();
 			ctx.arc(flags[i].x, flags[i].y, flags[i].radius, 0, 2*Math.PI);
-			ctx.fillStyle = '#FFFF00';
+			var fade = (flags[i].fadeSteps/((flag_expiration)*1000/tick_freq));
+			ctx.fillStyle = 'rgba(255,255,0,'+fade+')';
 			ctx.fill();
 			ctx.lineWidth = 3;
-			ctx.strokeStyle = '#FFFF00';
+			ctx.strokeStyle = 'rgba(51,51,0,'+fade+')';
 			ctx.stroke();
 		}
+
+		ctx.font="30px Arial";
+		ctx.fillStyle = 'red';
+		ctx.fillText(""+red.score,50,h-30);
+		ctx.fillStyle = 'blue';
+		ctx.fillText(""+blue.score,w-150,h-30);
+
+		var timeremaining = (round_length*60*1000 - game_steps*tick_freq)/1000; // in sec
+		ctx.fillStyle = 'black';
+		ctx.fillText(((timeremaining/60)|0)+":"+((timeremaining%60)|0),w/2-100,h-30);
 
 	}
 
