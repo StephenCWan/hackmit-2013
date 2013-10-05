@@ -2,8 +2,8 @@
 
 var stage = new Kinetic.Stage({
 	container: 'container',
-	width: 400,
-	height: 400,
+	width: 450,
+	height: 450,
 });
 
 var layer = new Kinetic.Layer();
@@ -17,7 +17,7 @@ var circleGroup = new Kinetic.Group({
 	//do something with the angle here
 	var x = stage.getWidth() /4;
 	var y = stage.getWidth()/4;
-	var radius = 100;
+	var radius = 150;
 	var scale = radius / Math.sqrt(Math.pow(pos.x - x, 2) + Math.pow(pos.y - y, 2));
 	if(scale < 1)
 	  return {
@@ -32,21 +32,22 @@ var circleGroup = new Kinetic.Group({
 var control = new Kinetic.Circle({
 	x: stage.getWidth()/4,
 	y: stage.getHeight()/4,
-	radius: 20,
+	radius: 50,
 	fill: 'black',
 	stroke: 'black',
 	strokeWidth: 4,
 });
 
 var circle = new Kinetic.Circle({
-	x:stage.getWidth()/4,
-	y:stage.getHieght()/4,
-	radius:100,
+	x:stage.getWidth()/2,
+	y:stage.getHeight()/2,
+	radius:150,
 	stroke: 'black',
 	strokeWidth:1,
 });
 
 circleGroup.add(control);
+layer.add(circle);
 layer.add(circleGroup);
 stage.add(layer);
 
@@ -62,8 +63,8 @@ $(document).mousemove(function(e){
 });
 
 var caculateAngle = function(left,top){
-	var x = left-200;
-	var y = 200-top;
+	var x = left-225;
+	var y = 225-top;
 	return Math.atan2(x,y);
 }
 
