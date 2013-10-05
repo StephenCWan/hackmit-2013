@@ -65,7 +65,9 @@ $(document).mousemove(function(e){
 var caculateAngle = function(left,top){
 	var x = left-225;
 	var y = 225-top;
-	return Math.atan2(x,y);
+	var angle = Math.atan2(y,x);
+	if (angle<0) return 2*Math.PI-Math.abs(angle);
+	else return Math.atan2(y,x);
 }
 
 })();
