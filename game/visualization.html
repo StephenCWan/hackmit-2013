@@ -3,7 +3,7 @@
 	</head>
 	<body>
 		<canvas id="team1" class="thumbstick" width="300" height="150" style="border:1px solid #d3d3d3;">Your browser does not support the HTML5 canvas tag.</canvas>
-		
+
 	</body>
 	<script>
 	setInterval(function() {
@@ -40,6 +40,7 @@
 					ctx.beginPath();
 					ctx.arc(100, 75, 50 + i, o * Math.PI / 180 * 10 - fiveD, (parseInt(o) + 1) * Math.PI / 180 * 10 - fiveD);
 					ctx.lineWidth = 1;
+					ctx.fillStyle = "rgba(" + (parseInt(i) / sizeC) + ", " + 0 + ", " + 0 + ", " + 0 + ")";
 					ctx.stroke();
 				}
 			}
