@@ -54,6 +54,19 @@ $(document).ready(function(){
 		this.y = y;
 		this.value = value;
 		this.radius = 15;
+		this.updatePos = function(){
+			var target_x;
+			var target_y;
+			if (red.score >blue.score){
+				target_x = red.x;
+				target_y = red.y;
+			} else{
+				target_x = blue.x;
+				target_y = blue.y;
+			}
+			this.x = this.x+(target_x-this.x)/500;
+			this.y = this.y+(target_y-this.y)/500;
+		}
 		this.fadeSteps = (monster_expiration+(0|(Math.random())*3)-1)*1000/tick_freq;
 	}
 
@@ -87,7 +100,10 @@ $(document).ready(function(){
 	var monsters = [];
 	var game_loop;
 	var game_steps = 0;
-	var level = 1;
+	var level = 0;
+
+	var red = new Team(w/4,h/2);
+	var blue = new Team(3*w/4, h/2);
 
 
 	function sleep(milliseconds,countdown) {
@@ -100,8 +116,6 @@ $(document).ready(function(){
 	}
 
 	function init(){
-		red = new Team(w/4,h/2);
-		blue = new Team(3*w/4, h/2);
 		flags.length = 0;
 		game_steps = 0;
 
@@ -109,19 +123,20 @@ $(document).ready(function(){
 		flags.push(new Flag(w/3, h/4, 10));
 		flags.push(new Flag(2*w/3, 3*h/4, 10));
 
-		monsters.push(new Monster(Math.round(Math.random()*1000)%450));
-		monsters.push(new Monster(Math.round(Math.random()*1000)%450));
-		monsters.push(new Monster(Math.round(Math.random()*1000)%450));
-
-		if(typeof game_loop != "undefined") clearInterval(game_loop);
-		if (level<5){
-			game_loop = setInterval(tick, tick_freq);
+		for (var i=0;i<level+1;i++){
+			monsters.push(new Monster(Math.round(Math.random()*1000)%450));
 		}
 
-		console.log('init');
-		//countdown in the beginning
-		//sleep(1000,3);
-		//sleep(1000,2);
+		if(typeof game_loop != "undefined") clearInterval(game_loop);
+		if (level<1){
+			game_loop = setInterval(tick, tick_freq);
+		}else{
+			clearInterval(game_loop);
+			ctx.font="80px Arial";
+			ctx.fillStyle = 'black';
+			ctx.fillText("Game Over",250,250);
+		}
+		level+=1
 	}
 	//
 	init();
@@ -154,6 +169,10 @@ $(document).ready(function(){
 		// update positions
 		red.updatePos();
 		blue.updatePos();
+
+		for (var i=0;i<monsters.length;i++){
+			monsters[i].updatePos();
+		}
 
 		// check collisions
 		for(var i=0;i<flags.length;i++){
@@ -200,19 +219,19 @@ $(document).ready(function(){
 			if(col_red && col_blue){
 				// smaller distance wins
 				if(col_red < col_blue){
-					red.score += monsters[i].value;
+					red.score -= monsters[i].value;
 				}
 				else{
-					blue.score += monsters[i].value;
+					blue.score -= monsters[i].value;
 				}
 				monsters.splice(i--,1)[0] = null;
 			}
 			else if(col_red){
-				red.score += monsters[i].value;
+				red.score -= monsters[i].value;
 				monsters.splice(i--,1)[0] = null;
 			}
 			else if(col_blue){
-				blue.score += monsters[i].value;
+				blue.score -= monsters[i].value;
 				monsters.splice(i--,1)[0] = null;
 			}
 		}

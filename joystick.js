@@ -41,7 +41,6 @@ var circleGroup = new Kinetic.Group({
 	draggable: true,
 	dragBoundFunc: function(pos) {
 	var angle = caculateAngle(parseInt($('#pos_left').text()),parseInt($('#pos_top').text()));
-	console.log(angle);
   	clientRef.child('value').set(angle);
 	var x = stage.getWidth() /4;
 	var y = stage.getWidth()/4;
@@ -77,7 +76,6 @@ var circle = new Kinetic.Circle({
 var restriction = new Kinetic.Circle({
 	x:stage.getWidth()/2,
 	y:stage.getHeight()/2,
-	fill: '#C45252',
 	radius:85,
 });
 
