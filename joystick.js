@@ -1,32 +1,31 @@
-(function(){
 
 
 
 // firebase logic
-  	var game = new Firebase("https://hackmit-2013.firebaseio.com/");
-  	var team1 = game.child('team1'), team2 = game.child('team2');
-  	var clientRef = null;
+var game = new Firebase("https://hackmit-2013.firebaseio.com/");
+var team1 = game.child('team1'), team2 = game.child('team2');
+var clientRef = null;
 
-  	team1.once('value', function(t1) {
-  		team2.once('value', function(t2) {
-  			var chosen = null;
-  			if (t1.numChildren() < t2.numChildren()) {
-  				chosen = team1;
-  			} else {
-  				chosen = team2;
-  			}
+team1.once('value', function(t1) {
+team2.once('value', function(t2) {
+var chosen = null;
+if (t1.numChildren() < t2.numChildren()) {
+	chosen = team1;
+} else {
+	chosen = team2;
+}
 
-  			// setup client
-  			clientRef = chosen.push({ 'value' : '0' });
-  			clientRef.onDisconnect().remove();
-  		});
-  	});
-  	/* 
-  	// to update this controller's data
-	*/
+// setup client
+clientRef = chosen.push({ 'value' : '0' });
+clientRef.onDisconnect().remove();
+});
+});
+/* 
+// to update this controller's data
+*/
 
 // joystick logic
-
+function init(){
 var stage = new Kinetic.Stage({
 	container: 'container',
 	width: 450,
@@ -40,10 +39,9 @@ var circleGroup = new Kinetic.Group({
 	y: stage.getHeight()/4,
 	draggable: true,
 	dragBoundFunc: function(pos) {
-	var angle = caculateAngle($('#pos_left').text(),$('#pos_top').text());
-	
+	var angle = caculateAngle(parseInt($('#pos_left').text()),parseInt($('#pos_top').text()));
+	console.log(angle);
   	clientRef.child('value').set(angle);
-	//do something with the angle here
 	var x = stage.getWidth() /4;
 	var y = stage.getWidth()/4;
 	var radius = 150;
@@ -75,8 +73,16 @@ var circle = new Kinetic.Circle({
 	strokeWidth:1,
 });
 
+var restriction = new Kinetic.Circle({
+	x:stage.getWidth()/2,
+	y:stage.getHeight()/2,
+	fill: '#C45252',
+	radius:85,
+});
+
 circleGroup.add(control);
 layer.add(circle);
+layer.add(restriction);
 layer.add(circleGroup);
 stage.add(layer);
 
@@ -95,7 +101,23 @@ var caculateAngle = function(left,top){
 	var x = left-225;
 	var y = 225-top;
 	var angle = Math.atan2(y,x);
-	if (angle<0) return 2*Math.PI-Math.abs(angle);
-	else return Math.atan2(y,x);
+	if (Math.abs(x)<40 && Math.abs(y)<40){
+		if (angle<0) return -2*Math.PI-Math.abs(angle);
+		else return -Math.atan2(y,x);
+	}
+	else{
+		if (angle<0) return 2*Math.PI-Math.abs(angle);
+		else return Math.atan2(y,x);
+	}
 }
-})();
+
+// Hackish way to get it to center the circle again 
+stage.on('mouseup touchend', function() {
+    init();
+});
+
+
+
+};
+
+init();
