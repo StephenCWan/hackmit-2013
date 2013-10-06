@@ -21,7 +21,7 @@ $(document).ready(function(){
 	function Team(x, y){
 		this.score = 0;
 		this.input_dirs = []; // directions in radians from +x axis, updated from FireBase
-		this.radius = 15;
+		this.radius = w/90;
 		this.x = x;
 		this.y = y;
 		this.updatePos = function(){
@@ -52,9 +52,9 @@ $(document).ready(function(){
 		this.y = y;
 		this.value = value;
 		switch(value){
-			case 10: this.radius = 8; break;
-			case 20: this.radius = 11; break;
-			case 50: this.radius = 14; break;
+			case 10: this.radius = w/168.75; break;
+			case 20: this.radius = w/122.72727272727273; break;
+			case 50: this.radius = w/96.42857142857143; break;
 		}
 		this.fadeSteps = (flag_expiration+(0|(Math.random())*3)-1)*1000/tick_freq;
 	}
@@ -200,7 +200,7 @@ $(document).ready(function(){
 
 		var timeremaining = (round_length*60*1000 - game_steps*tick_freq)/1000; // in sec
 		ctx.fillStyle = 'black';
-		ctx.fillText(((timeremaining/60)|0)+":"+((timeremaining%60)|0),w/2-100,h-30);
+		ctx.fillText(((timeremaining/60)|0)+":"+((timeremaining%60)).toFixed(2),w/2-100,h-30);
 
 	}
 
@@ -212,6 +212,11 @@ $(document).ready(function(){
 		else if(key == "38") red.input_dirs.push(3*TAU/4);
 		else if(key == "39") red.input_dirs.push(0);
 		else if(key == "40") red.input_dirs.push(TAU/4);
+
+		else if(key == "68") blue.input_dirs.push(0);
+		else if(key == "83") blue.input_dirs.push(TAU/4);
+		else if(key == "65") blue.input_dirs.push(TAU/2);
+		else if(key == "87") blue.input_dirs.push(3*TAU/4);
 	});
 		
 });
