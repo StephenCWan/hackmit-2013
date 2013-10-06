@@ -6,6 +6,8 @@ $(window).resize(function(){
 	w = $("#canvas").width();
 	h = $("#canvas").height();
 });
+
+var f_game = new Firebase("https://hackmit-2013.firebaseio.com/");
 var w = 0, h = 0;
 $(document).ready(function(){
 	//Canvas stuff
@@ -35,7 +37,7 @@ $(document).ready(function(){
 				y_sum += Math.sin(this.input_dirs[i]);
 			}
 			this.x += 2*this.radius/3*x_sum/this.input_dirs.length;
-			this.y += 2*this.radius/3*y_sum/this.input_dirs.length;
+			this.y -= 2*this.radius/3*y_sum/this.input_dirs.length;
 			if(this.x+this.radius >= w) this.x = w-this.radius-1;
 			else if (this.x-this.radius <= 0) this.x = this.radius+1;
 			if(this.y+this.radius >= h) this.y = h-this.radius-1;
@@ -96,6 +98,18 @@ $(document).ready(function(){
 	//
 	function tick()
 	{
+		f_game.child('team2').once('value', function(f) {
+			f.forEach(function(data) {
+				console.log(data.val().value);
+				red.input_dirs.push(parseFloat(data.val().value));
+			});
+		});
+		f_game.child('team1').once('value', function(f) {
+			f.forEach(function(data) {
+				console.log(data.val().value);
+				blue.input_dirs.push(parseFloat(data.val().value));
+			});
+		});
 		// invalidate canvas
 		ctx.fillStyle = "white";
 		ctx.fillRect(0, 0, w, h);

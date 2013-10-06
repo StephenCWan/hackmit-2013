@@ -1,5 +1,32 @@
 (function(){
 
+
+
+// firebase logic
+  	var game = new Firebase("https://hackmit-2013.firebaseio.com/");
+  	var team1 = game.child('team1'), team2 = game.child('team2');
+  	var clientRef = null;
+
+  	team1.once('value', function(t1) {
+  		team2.once('value', function(t2) {
+  			var chosen = null;
+  			if (t1.numChildren() < t2.numChildren()) {
+  				chosen = team1;
+  			} else {
+  				chosen = team2;
+  			}
+
+  			// setup client
+  			clientRef = chosen.push({ 'value' : '0' });
+  			clientRef.onDisconnect().remove();
+  		});
+  	});
+  	/* 
+  	// to update this controller's data
+	*/
+
+// joystick logic
+
 var stage = new Kinetic.Stage({
 	container: 'container',
 	width: 450,
@@ -14,6 +41,8 @@ var circleGroup = new Kinetic.Group({
 	draggable: true,
 	dragBoundFunc: function(pos) {
 	var angle = caculateAngle($('#pos_left').text(),$('#pos_top').text());
+	
+  	clientRef.child('value').set(angle);
 	//do something with the angle here
 	var x = stage.getWidth() /4;
 	var y = stage.getWidth()/4;
@@ -69,5 +98,4 @@ var caculateAngle = function(left,top){
 	if (angle<0) return 2*Math.PI-Math.abs(angle);
 	else return Math.atan2(y,x);
 }
-
 })();
