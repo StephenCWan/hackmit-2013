@@ -14,7 +14,6 @@ var circleGroup = new Kinetic.Group({
 	draggable: true,
 	dragBoundFunc: function(pos) {
 	var angle = caculateAngle($('#pos_left').text(),$('#pos_top').text());
-	//do something with the angle here
 	var x = stage.getWidth() /4;
 	var y = stage.getWidth()/4;
 	var radius = 150;
