@@ -1,4 +1,3 @@
-(function(){
 
 
 
@@ -26,7 +25,7 @@
 	*/
 
 // joystick logic
-
+function init(){
 var stage = new Kinetic.Stage({
 	container: 'container',
 	width: 450,
@@ -98,4 +97,14 @@ var caculateAngle = function(left,top){
 	if (angle<0) return 2*Math.PI-Math.abs(angle);
 	else return Math.atan2(y,x);
 }
-})();
+
+// Hackish way to get it to center the circle again 
+stage.on('mouseup touchend', function() {
+    init();
+});
+
+
+
+};
+
+init();
