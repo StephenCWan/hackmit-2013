@@ -226,7 +226,7 @@ $(document).ready(function(){
 		var timeremaining = (round_length*60*1000 - game_steps*tick_freq)/1000; // in sec
 		if(timeremaining < 0) timeremaining = 0;
 		ctx.fillStyle = 'black';
-		ctx.fillText(((timeremaining/60)|0)+":"+((timeremaining%60)).toFixed(2),w/2-100,h-30);
+		ctx.fillText(((timeremaining/60)|0)+":"+(timeremaining%60<10?'0':'')+((timeremaining%60)).toFixed(2),w/2-100,h-30);
 
 	}
 
