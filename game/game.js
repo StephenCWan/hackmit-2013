@@ -1,26 +1,61 @@
 $(window).resize(function(){	
-	$("#canvas").width('100%');
-	$("#canvas").height('90%');
-	$("#canvas").attr('width',$("#canvas").width());
-	$("#canvas").attr('height',$("#canvas").height());
-	w = $("#canvas").width();
-	h = $("#canvas").height();
+	$("#game").width('100%');
+	$("#game").height('70%');
+	$("#game").attr('width',$("#game").width());
+	$("#game").attr('height',$("#game").height());
+	w = $("#game").width();
+	h = $("#game").height();
 });
 
-var f_game = new Firebase("https://hackmit-2013.firebaseio.com/");
+function pad(n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+		
 var w = 0, h = 0;
+var red, red_sst;
+var blue, blue_sst;
+
+var f_game = new Firebase("https://hackmit-2013.firebaseio.com/");
+
+f_game.child('team2').on('value', function(f) {
+	var temp = [];
+	f.forEach(function(data) {
+		temp.push(parseFloat(data.val().value));
+	});
+	red_sst = temp;
+	red.input_dirs = red_sst.slice(0);
+});
+f_game.child('team1').on('value', function(f) {
+	var temp = [];
+	f.forEach(function(data) {
+		temp.push(parseFloat(data.val().value));
+	});
+	blue_sst = temp;
+	blue.input_dirs = blue_sst.slice(0);
+});
+
 $(document).ready(function(){
+
+
+	var c1 = document.getElementById("team1");
+	var ctxf1 = c1.getContext("2d");
+	var c2 = document.getElementById("team2");
+	var ctxf2 = c2.getContext("2d");
+
+	/* VIZ */
+
 	//Canvas stuff
-	var canvas = $("#canvas")[0];
+	var canvas = document.getElementById("game");
 	var ctx = canvas.getContext("2d");
 
 	$(window).resize();
 
 	var round_length = 2; // in minutes
-	var monster_expiration = 8;
 	var flag_expiration = 5; // in seconds
-	var tick_freq = 50; // in millis
-
+	var tick_freq = 10; // in millis
+	
 	function Team(x, y){
 		this.score = 0;
 		this.input_dirs = []; // directions in radians from +x axis, updated from FireBase
@@ -44,18 +79,9 @@ $(document).ready(function(){
 			if(this.y+this.radius >= h) this.y = h-this.radius-1;
 			else if (this.y-this.radius <= 0) this.y = this.radius+1;
 
-			this.input_dirs.length = 0;
 		};
 
 	};
-
-	function Monster(x,y,value){
-		this.x = x;
-		this.y = y;
-		this.value = value;
-		this.radius = 15;
-		this.fadeSteps = (monster_expiration+(0|(Math.random())*3)-1)*1000/tick_freq;
-	}
 
 	function Flag(x, y, value){
 		Flag.prototype.flag_vals = [10, 20, 50];
@@ -80,26 +106,13 @@ $(document).ready(function(){
 		return false;
 	}
 
-	var red;
-	var blue;
-	var monsters = [];
 	var flags = [];
-	var monsters = [];
 	var game_loop;
 	var game_steps = 0;
-	var level = 1;
 
-
-	function sleep(milliseconds,countdown) {
-		var start = new Date().getTime();
-		while((new Date().getTime() - start) < milliseconds){
-			ctx.font="80px Arial";
-			ctx.fillStyle = 'black';
-			ctx.fillText(countdown,50,50);
-		}
-	}
-
-	function init(){
+	function init()
+	{	
+		console.log('init');
 		red = new Team(w/4,h/2);
 		blue = new Team(3*w/4, h/2);
 		flags.length = 0;
@@ -109,36 +122,82 @@ $(document).ready(function(){
 		flags.push(new Flag(w/3, h/4, 10));
 		flags.push(new Flag(2*w/3, 3*h/4, 10));
 
-		monsters.push(new Monster(Math.round(Math.random()*1000)%450));
-		monsters.push(new Monster(Math.round(Math.random()*1000)%450));
-		monsters.push(new Monster(Math.round(Math.random()*1000)%450));
 
-		if(typeof game_loop != "undefined") clearInterval(game_loop);
-		if (level<5){
-			game_loop = setInterval(tick, tick_freq);
-		}
-
-		console.log('init');
-		//countdown in the beginning
-		//sleep(1000,3);
-		//sleep(1000,2);
+		if(typeof game_loop != "undefined") 
+			clearInterval(game_loop);
+		game_loop = setInterval(tick, tick_freq);
 	}
 	//
 	init();
 	//
-	function tick(){
-		f_game.child('team2').once('value', function(f) {
-			f.forEach(function(data) {
-				//console.log(data.val().value);
-				red.input_dirs.push(parseFloat(data.val().value));
-			});
+	function tick()
+	{
+		ctxf1.fillStyle = 'white';
+		ctxf1.clearRect(0, 0, 300, 200);
+		ctxf2.clearRect(0, 0, 300, 200);
+		ctxf2.fillStyle = 'black';
+
+		/* START VIZ DRAWING CODE */
+
+		var angles = red_sst;
+		var sizeC = 40;
+		var fiveD = 2.5 * Math.PI / 180;
+
+
+		ctxf2.beginPath();
+		ctxf2.arc(100, 75, 50, 0, 2*Math.PI);
+		ctxf2.lineWidth = 1;
+		ctxf2.stroke();
+
+		var dist = { };
+		angles.forEach(function(data) {
+			var norm = 0|(data / Math.PI * 180 / 10);
+			dist[norm] = ((isNaN(dist[norm]) ? 0 : dist[norm])) + (1 / angles.length * sizeC);
 		});
-		f_game.child('team1').once('value', function(f) {
-			f.forEach(function(data) {
-				//console.log(data.val().value);
-				blue.input_dirs.push(parseFloat(data.val().value));
-			});
+
+		for (var i = 0; i < sizeC; i++) {
+			for (var o in dist) {
+				if (dist.hasOwnProperty(o) && dist[o] > i) {
+					ctxf2.beginPath();
+					ctxf2.arc(100, 75, 50 + i, o * Math.PI / 180 * 10 - fiveD, (parseInt(o) + 1) * Math.PI / 180 * 10 - fiveD);
+					ctxf2.lineWidth = 1;
+					ctxf2.stroke();
+				}
+			}
+		}
+
+		/* END VIZ DRAWING CODE */
+
+
+		var angles = blue_sst;
+		var sizeC = 40;
+		var fiveD = 2.5 * Math.PI / 180;
+
+
+		ctxf1.beginPath();
+		ctxf1.arc(100, 75, 50, 0, 2*Math.PI);
+		ctxf1.lineWidth = 1;
+		ctxf1.stroke();
+
+		var dist = { };
+		angles.forEach(function(data) {
+			var norm = 0|(data / Math.PI * 180 / 10);
+			dist[norm] = ((isNaN(dist[norm]) ? 0 : dist[norm])) + (1 / angles.length * sizeC);
 		});
+
+		for (var i = 0; i < sizeC; i++) {
+			for (var o in dist) {
+				if (dist.hasOwnProperty(o) && dist[o] > i) {
+					ctxf1.beginPath();
+					ctxf1.arc(100, 75, 50 + i, o * Math.PI / 180 * 10 - fiveD, (parseInt(o) + 1) * Math.PI / 180 * 10 - fiveD);
+					ctxf1.lineWidth = 1;
+					ctxf1.fillStyle = "rgba(" + (parseInt(i) / sizeC) + ", " + 0 + ", " + 0 + ", " + 0 + ")";
+					ctxf1.stroke();
+				}
+			}
+		}
+
+		/* JONATHAN CODE */
 		// invalidate canvas
 		ctx.fillStyle = "white";
 		ctx.fillRect(0, 0, w, h);
@@ -186,37 +245,6 @@ $(document).ready(function(){
 			}
 		}
 
-		// check collisions of monsters
-		for(var i=0;i<monsters.length;i++){
-			monsters[i].fadeSteps--;
-			if(monsters[i].fadeSteps < 0){
-				// check flag expiration
-				monsters.splice(i--,1)[0] = null;
-				continue;
-			}
-			var col_red = collision(monsters[i], red);
-			var col_blue = collision(monsters[i], blue);
-			// both teams are collide
-			if(col_red && col_blue){
-				// smaller distance wins
-				if(col_red < col_blue){
-					red.score += monsters[i].value;
-				}
-				else{
-					blue.score += monsters[i].value;
-				}
-				monsters.splice(i--,1)[0] = null;
-			}
-			else if(col_red){
-				red.score += monsters[i].value;
-				monsters.splice(i--,1)[0] = null;
-			}
-			else if(col_blue){
-				blue.score += monsters[i].value;
-				monsters.splice(i--,1)[0] = null;
-			}
-		}
-
 		// spawn new flags
 		var difficulty = (0|(game_steps*tick_freq / (round_length*1000*60/4)));
 		while(flags.length < 2 || flags.length < 2+difficulty){
@@ -231,24 +259,6 @@ $(document).ready(function(){
 				}
 				if(b) continue;
 				flags.push(gen);
-			}
-
-		}
-
-		// spawn new monsters
-		var difficulty = (0|(game_steps*tick_freq / (round_length*1000*60/4)));
-		while(monsters.length < 3 || monsters.length < 3+difficulty){
-			var gen = new Monster( 0|(Math.random()*(w-20))+10, 0|(Math.random()*(h-20))+10, 10);
-			if( !(collision(gen,red) || collision(gen,blue)) ){
-				var b = false;
-				for(var i=0;i<monsters.length;i++){
-					if(collision(monsters[i],gen)){
-						b = true;
-						break;
-					}
-				}
-				if(b) continue;
-				monsters.push(gen);
 			}
 
 		}
@@ -284,18 +294,6 @@ $(document).ready(function(){
 			ctx.stroke();
 		}
 
-		for(var i=0;i<monsters.length;i++){
-			// draw monsters
-			ctx.beginPath();
-			ctx.arc(monsters[i].x, monsters[i].y, monsters[i].radius, 0, 2*Math.PI);
-			var fade = (monsters[i].fadeSteps/((monster_expiration)*1000/tick_freq));
-			ctx.fillStyle = 'rgba(184,118,21,'+fade+')';
-			ctx.fill();
-			ctx.lineWidth = 3;
-			ctx.strokeStyle = 'rgba(51,51,0,'+fade+')';
-			ctx.stroke();
-		}
-
 		ctx.font="30px Arial";
 		ctx.fillStyle = 'red';
 		ctx.fillText(""+red.score,50,h-30);
@@ -307,7 +305,7 @@ $(document).ready(function(){
 		ctx.fillText(((timeremaining/60)|0)+":"+((timeremaining%60)).toFixed(2),w/2-100,h-30);
 
 	}
-
+	/*
 	// for debug
 	var TAU = 2*Math.PI;
 	$(document).keydown(function(e){
@@ -322,5 +320,5 @@ $(document).ready(function(){
 		else if(key == "65") blue.input_dirs.push(TAU/2);
 		else if(key == "87") blue.input_dirs.push(3*TAU/4);
 	});
-		
+		*/
 });

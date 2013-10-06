@@ -31,18 +31,16 @@
 		var dist = { };
 		angles.forEach(function(data) {
 			var norm = Math.floor(data / Math.PI * 180 / 10);
-			dist[norm] = (isNaN(dist[norm]) ? 0 : dist[norm]) + 1;
+			dist[norm] = ((isNaN(dist[norm]) ? 0 : dist[norm])) + (1 / angles.length * sizeC);
+			debugger;
 		});
 
-		for (var i = 0; i < sizeC; i++) {
-			for (var o in dist) {
-				if (dist.hasOwnProperty(o) && dist[o] > i) {
-					ctx.beginPath();
-					ctx.arc(100, 75, 50 + i, o * Math.PI / 180 * 10 - fiveD, (parseInt(o) + 1) * Math.PI / 180 * 10 - fiveD);
-					ctx.lineWidth = 1;
-					ctx.fillStyle = "rgba(" + (parseInt(i) / sizeC) + ", " + 0 + ", " + 0 + ", " + 0 + ")";
-					ctx.stroke();
-				}
+		for (var o in dist) {
+			if (dist.hasOwnProperty(o)) {
+				ctx.beginPath();
+				ctx.arc(100, 75, dist[o]* sizeC /1.5, o * Math.PI / 180 * 10 - fiveD, (parseInt(o) + 1) * Math.PI / 180 * 10 - fiveD);
+				ctx.lineWidth = 50;
+				ctx.stroke();
 			}
 		}
 	}, 50);
