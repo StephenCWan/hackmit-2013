@@ -118,7 +118,18 @@ $(document).ready(function(){
 
 		// check end condition
 		if(game_steps++ > round_length*60*1000/tick_freq){
-			init();
+			if(typeof game_loop != "undefined") clearInterval(game_loop);
+			ctx.font="30px Arial";
+			var winner = red.score > blue.score ? 'red' : red.score == blue.score ? 'black' : 'blue'
+			ctx.fillStyle = winner;
+			if(winner == 'red')
+				ctx.fillText("Red team wins! Get ready...",w/2,h/2-100);
+			if(winner == 'blue')
+				ctx.fillText("Blue team wins! Get ready...",w/2,h/2-100);
+			if(winner == 'black')
+				ctx.fillText("Tied game! Get ready...",w/2,h/2-100);
+
+			setTimeout(init,5000);
 			return;
 		}
 		
@@ -213,6 +224,7 @@ $(document).ready(function(){
 		ctx.fillText(""+blue.score,w-150,h-30);
 
 		var timeremaining = (round_length*60*1000 - game_steps*tick_freq)/1000; // in sec
+		if(timeremaining < 0) timeremaining = 0;
 		ctx.fillStyle = 'black';
 		ctx.fillText(((timeremaining/60)|0)+":"+((timeremaining%60)).toFixed(2),w/2-100,h-30);
 
