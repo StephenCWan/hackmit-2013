@@ -17,9 +17,10 @@ $(document).ready(function(){
 	$(window).resize();
 
 	var round_length = 2; // in minutes
+	var monster_expiration = 8;
 	var flag_expiration = 5; // in seconds
 	var tick_freq = 50; // in millis
-	
+
 	function Team(x, y){
 		this.score = 0;
 		this.input_dirs = []; // directions in radians from +x axis, updated from FireBase
@@ -48,6 +49,14 @@ $(document).ready(function(){
 
 	};
 
+	function Monster(x,y,value){
+		this.x = x;
+		this.y = y;
+		this.value = value;
+		this.radius = 15;
+		this.fadeSteps = (monster_expiration+(0|(Math.random())*3)-1)*1000/tick_freq;
+	}
+
 	function Flag(x, y, value){
 		Flag.prototype.flag_vals = [10, 20, 50];
 		this.x = x;
@@ -73,13 +82,24 @@ $(document).ready(function(){
 
 	var red;
 	var blue;
+	var monsters = [];
 	var flags = [];
+	var monsters = [];
 	var game_loop;
 	var game_steps = 0;
+	var level = 1;
 
-	function init()
-	{	
-		console.log('init');
+
+	function sleep(milliseconds,countdown) {
+		var start = new Date().getTime();
+		while((new Date().getTime() - start) < milliseconds){
+			ctx.font="80px Arial";
+			ctx.fillStyle = 'black';
+			ctx.fillText(countdown,50,50);
+		}
+	}
+
+	function init(){
 		red = new Team(w/4,h/2);
 		blue = new Team(3*w/4, h/2);
 		flags.length = 0;
@@ -89,24 +109,33 @@ $(document).ready(function(){
 		flags.push(new Flag(w/3, h/4, 10));
 		flags.push(new Flag(2*w/3, 3*h/4, 10));
 
+		monsters.push(new Monster(Math.round(Math.random()*1000)%450));
+		monsters.push(new Monster(Math.round(Math.random()*1000)%450));
+		monsters.push(new Monster(Math.round(Math.random()*1000)%450));
 
 		if(typeof game_loop != "undefined") clearInterval(game_loop);
-		game_loop = setInterval(tick, tick_freq);
+		if (level<5){
+			game_loop = setInterval(tick, tick_freq);
+		}
+
+		console.log('init');
+		//countdown in the beginning
+		//sleep(1000,3);
+		//sleep(1000,2);
 	}
 	//
 	init();
 	//
-	function tick()
-	{
+	function tick(){
 		f_game.child('team2').once('value', function(f) {
 			f.forEach(function(data) {
-				console.log(data.val().value);
+				//console.log(data.val().value);
 				red.input_dirs.push(parseFloat(data.val().value));
 			});
 		});
 		f_game.child('team1').once('value', function(f) {
 			f.forEach(function(data) {
-				console.log(data.val().value);
+				//console.log(data.val().value);
 				blue.input_dirs.push(parseFloat(data.val().value));
 			});
 		});
@@ -157,6 +186,37 @@ $(document).ready(function(){
 			}
 		}
 
+		// check collisions of monsters
+		for(var i=0;i<monsters.length;i++){
+			monsters[i].fadeSteps--;
+			if(monsters[i].fadeSteps < 0){
+				// check flag expiration
+				monsters.splice(i--,1)[0] = null;
+				continue;
+			}
+			var col_red = collision(monsters[i], red);
+			var col_blue = collision(monsters[i], blue);
+			// both teams are collide
+			if(col_red && col_blue){
+				// smaller distance wins
+				if(col_red < col_blue){
+					red.score += monsters[i].value;
+				}
+				else{
+					blue.score += monsters[i].value;
+				}
+				monsters.splice(i--,1)[0] = null;
+			}
+			else if(col_red){
+				red.score += monsters[i].value;
+				monsters.splice(i--,1)[0] = null;
+			}
+			else if(col_blue){
+				blue.score += monsters[i].value;
+				monsters.splice(i--,1)[0] = null;
+			}
+		}
+
 		// spawn new flags
 		var difficulty = (0|(game_steps*tick_freq / (round_length*1000*60/4)));
 		while(flags.length < 2 || flags.length < 2+difficulty){
@@ -171,6 +231,24 @@ $(document).ready(function(){
 				}
 				if(b) continue;
 				flags.push(gen);
+			}
+
+		}
+
+		// spawn new monsters
+		var difficulty = (0|(game_steps*tick_freq / (round_length*1000*60/4)));
+		while(monsters.length < 3 || monsters.length < 3+difficulty){
+			var gen = new Monster( 0|(Math.random()*(w-20))+10, 0|(Math.random()*(h-20))+10, 10);
+			if( !(collision(gen,red) || collision(gen,blue)) ){
+				var b = false;
+				for(var i=0;i<monsters.length;i++){
+					if(collision(monsters[i],gen)){
+						b = true;
+						break;
+					}
+				}
+				if(b) continue;
+				monsters.push(gen);
 			}
 
 		}
@@ -200,6 +278,18 @@ $(document).ready(function(){
 			ctx.arc(flags[i].x, flags[i].y, flags[i].radius, 0, 2*Math.PI);
 			var fade = (flags[i].fadeSteps/((flag_expiration)*1000/tick_freq));
 			ctx.fillStyle = 'rgba(255,255,0,'+fade+')';
+			ctx.fill();
+			ctx.lineWidth = 3;
+			ctx.strokeStyle = 'rgba(51,51,0,'+fade+')';
+			ctx.stroke();
+		}
+
+		for(var i=0;i<monsters.length;i++){
+			// draw monsters
+			ctx.beginPath();
+			ctx.arc(monsters[i].x, monsters[i].y, monsters[i].radius, 0, 2*Math.PI);
+			var fade = (monsters[i].fadeSteps/((monster_expiration)*1000/tick_freq));
+			ctx.fillStyle = 'rgba(184,118,21,'+fade+')';
 			ctx.fill();
 			ctx.lineWidth = 3;
 			ctx.strokeStyle = 'rgba(51,51,0,'+fade+')';
