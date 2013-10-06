@@ -17,8 +17,8 @@ $(document).ready(function(){
 	$(window).resize();
 
 	var round_length = 2; // in minutes
-	var monster_expiration = 8;
-	var flag_expiration = 5; // in seconds
+	var monster_expiration = 15;
+	var flag_expiration = 10; // in seconds
 	var tick_freq = 50; // in millis
 
 	function Team(x, y){
@@ -64,8 +64,8 @@ $(document).ready(function(){
 				target_x = blue.x;
 				target_y = blue.y;
 			}
-			this.x = this.x+(target_x-this.x)/500;
-			this.y = this.y+(target_y-this.y)/500;
+			this.x = this.x+(target_x-this.x)/(300);
+			this.y = this.y+(target_y-this.y)/(300);
 		}
 		this.fadeSteps = (monster_expiration+(0|(Math.random())*3)-1)*1000/tick_freq;
 	}
@@ -80,6 +80,13 @@ $(document).ready(function(){
 			case 20: this.radius = w/122.72727272727273; break;
 			case 50: this.radius = w/96.42857142857143; break;
 		}
+		this.fadeSteps = (flag_expiration+(0|(Math.random())*3)-1)*1000/tick_freq;
+	}
+
+	function Bomb(x,y,value){
+		this.x = x;
+		this.y = y;
+		this.value = value;
 		this.fadeSteps = (flag_expiration+(0|(Math.random())*3)-1)*1000/tick_freq;
 	}
 
@@ -100,7 +107,7 @@ $(document).ready(function(){
 	var monsters = [];
 	var game_loop;
 	var game_steps = 0;
-	var level = 0;
+	var level = 3;
 
 	var red = new Team(w/4,h/2);
 	var blue = new Team(3*w/4, h/2);
@@ -128,7 +135,7 @@ $(document).ready(function(){
 		}
 
 		if(typeof game_loop != "undefined") clearInterval(game_loop);
-		if (level<1){
+		if (level<5){
 			game_loop = setInterval(tick, tick_freq);
 		}else{
 			clearInterval(game_loop);
