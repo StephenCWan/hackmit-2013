@@ -79,6 +79,7 @@ $(document).ready(function(){
 			if(this.y+this.radius >= h) this.y = h-this.radius-1;
 			else if (this.y-this.radius <= 0) this.y = this.radius+1;
 
+			this.input_dirs.length = 0;
 		};
 
 	};
@@ -302,7 +303,7 @@ $(document).ready(function(){
 
 		var timeremaining = (round_length*60*1000 - game_steps*tick_freq)/1000; // in sec
 		ctx.fillStyle = 'black';
-		ctx.fillText(((timeremaining/60)|0)+":"+((timeremaining%60)).toFixed(2),w/2-100,h-30);
+		ctx.fillText(((timeremaining/60)|0)+":"+((timeremaining%60 < 10)?'0':'')+((timeremaining%60)).toFixed(2),w/2-100,h-30);
 
 	}
 	/*
